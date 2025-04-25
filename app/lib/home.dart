@@ -6,48 +6,15 @@ import 'schedule.dart';
 import 'edit_profile.dart';
 import 'notifications.dart';
 import 'privacy.dart';
-import 'permission.dart';
 import 'about_us.dart';
 import 'login.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-
-class DatabaseHelper {
-  final CollectionReference profileCollection =
-      FirebaseFirestore.instance.collection('user_profiles');
-
-  String get userId => FirebaseAuth.instance.currentUser?.uid ?? "unknown_user";
-
-  // Insert or update profile
-  Future<void> insertProfile(Map<String, dynamic> profileData) async {
-    try {
-      await profileCollection.doc(userId).set(profileData, SetOptions(merge: true));
-    } catch (e) {
-      print("Error inserting profile: $e");
-      rethrow;
-    }
-  }
-
-  // Get profile by email
-  Future<Map<String, dynamic>> getProfileByEmail(String email) async {
-    try {
-      final querySnapshot = await profileCollection
-          .where('email', isEqualTo: email)
-          .limit(1)
-          .get();
-
-      if (querySnapshot.docs.isNotEmpty) {
-        return querySnapshot.docs.first.data() as Map<String, dynamic>;
-      }
-      return {};
-    } catch (e) {
-      print("Error fetching profile by email: $e");
-      return {};
-    }
-  }
-}
 
 class HomePage extends StatefulWidget {
+  final Function(bool) onThemeChanged;
+  final bool isDarkMode;
+
+  HomePage({required this.onThemeChanged, required this.isDarkMode});
+
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -64,13 +31,14 @@ class _HomePageState extends State<HomePage> {
     SchedulePage(),
   ];
 
+  final List<String> _titles = ['Home', 'Doctors', 'Schedule'];
+
   @override
   void initState() {
     super.initState();
     _loadUserData();
   }
 
-  // Load user data from SharedPreferences
   Future<void> _loadUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -80,18 +48,16 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  // Get profile image
   ImageProvider _getImageProvider() {
     if (_userImage.isEmpty) {
       return AssetImage('assets/images/empty.jpg');
     } else if (_userImage.startsWith('http')) {
       return NetworkImage(_userImage);
     } else {
-      return AssetImage(_userImage); // Local asset image
+      return AssetImage(_userImage);
     }
   }
 
-  // Handle bottom navigation bar tap
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -102,19 +68,17 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Doctor Channeling App'),
-        backgroundColor: const Color.fromARGB(255, 238, 222, 222),
-      ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [const Color.fromARGB(255, 238, 222, 222), Colors.blue.shade300],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+        title: Text(_titles[_selectedIndex]),
+        actions: [
+          IconButton(
+            icon: Icon(widget.isDarkMode ? Icons.dark_mode : Icons.light_mode),
+            onPressed: () {
+              widget.onThemeChanged(!widget.isDarkMode);
+            },
           ),
-        ),
-        child: _pages[_selectedIndex],
+        ],
       ),
+      body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         items: const [
@@ -131,7 +95,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Build the Drawer widget
   Widget _buildDrawer() {
     return Drawer(
       child: ListView(
@@ -140,7 +103,7 @@ class _HomePageState extends State<HomePage> {
           Stack(
             children: [
               UserAccountsDrawerHeader(
-                accountName: Text(_userName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                accountName: Text(_userName, style: TextStyle(fontWeight: FontWeight.bold)),
                 accountEmail: Text(_userEmail),
                 currentAccountPicture: CircleAvatar(
                   backgroundImage: _getImageProvider(),
@@ -149,11 +112,7 @@ class _HomePageState extends State<HomePage> {
                   },
                 ),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [const Color.fromARGB(255, 180, 228, 200), Colors.blue],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
+                  color: Colors.blue, // Removed background image, kept solid color
                 ),
               ),
               Positioned(
@@ -184,20 +143,21 @@ class _HomePageState extends State<HomePage> {
           ),
           _buildDrawerItem(Icons.notifications, 'Notifications', Colors.purple, NotificationsPage()),
           _buildDrawerItem(Icons.privacy_tip, 'Privacy', Colors.green, PrivacyPage()),
-          _buildDrawerItem(Icons.settings, 'Permission', Colors.orange, PermissionPage()),
           _buildDrawerItem(Icons.info, 'About Us', Colors.teal, AboutUsPage()),
-          _buildDrawerItem(Icons.logout, 'Log Out', Colors.red, LoginPage(), isLogout: true),
+          _buildDrawerItem(Icons.logout, 'Log Out', Colors.amber, LoginPage(), isLogout: true),
         ],
       ),
     );
   }
 
-  // Helper function for drawer items
   Widget _buildDrawerItem(IconData icon, String title, Color iconColor, Widget page, {bool isLogout = false}) {
     return ListTile(
       leading: Icon(icon, color: iconColor),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-      tileColor: isLogout ? Colors.red.shade50 : null,
+      title: Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
+      tileColor: isLogout 
+          ? (widget.isDarkMode ? Colors.deepPurple : Colors.amber.shade100)  // Amazing Log Out color
+          : null,
+      textColor: widget.isDarkMode ? Colors.white : Colors.black, // Adjust text color for dark mode
       onTap: () async {
         if (isLogout) {
           SharedPreferences prefs = await SharedPreferences.getInstance();

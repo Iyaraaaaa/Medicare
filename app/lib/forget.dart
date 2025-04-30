@@ -18,7 +18,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     if (email.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text("Please enter your email"),
-        backgroundColor: Colors.red,
+        backgroundColor: const Color.fromARGB(255, 13, 64, 218),
       ));
       return;
     }
@@ -39,7 +39,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(e.message ?? "Failed to send reset link"),
-        backgroundColor: Colors.red,
+        backgroundColor: const Color.fromARGB(255, 13, 64, 218),
       ));
     } finally {
       setState(() {
@@ -51,65 +51,78 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 231, 239, 246),
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: Text("Forgot Password"),
-        backgroundColor: const Color.fromARGB(255, 243, 242, 243), // Change the AppBar color to match the login style
+        backgroundColor: const Color.fromARGB(255, 243, 242, 243),
       ),
-      body: Center(
-        child: Card(
-          elevation: 8,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Padding(
-            padding: EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'FORGOT PASSWORD',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 20),
-                TextField(
-                  controller: _emailController,
-                  decoration: InputDecoration(
-                    labelText: "Enter your email",
-                    border: OutlineInputBorder(),
-                  ),
-                  keyboardType: TextInputType.emailAddress,
-                ),
-                SizedBox(height: 10),
-                ElevatedButton(
-                  onPressed: _isLoading ? null : _sendPasswordResetLink, // Only clickable when not loading
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.pink, // Set button color to match the login button
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: Center(
-                      child: _isLoading
-                          ? CircularProgressIndicator(color: Colors.white)
-                          : Text('Send Reset Link'),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 10),
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context); // Go back to login screen
-                  },
-                  child: Text('Back to Login'),
-                ),
-              ],
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/login.webp', // Ensure this path is correct
+              fit: BoxFit.cover,
             ),
           ),
-        ),
+          Center(
+            child: SingleChildScrollView(
+              child: Card(
+                elevation: 8,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                color: Colors.white.withOpacity(0.9),
+                child: Padding(
+                  padding: EdgeInsets.all(20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'FORGOT PASSWORD',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(height: 20),
+                      TextField(
+                        controller: _emailController,
+                        decoration: InputDecoration(
+                          labelText: "Enter your email",
+                          border: OutlineInputBorder(),
+                        ),
+                        keyboardType: TextInputType.emailAddress,
+                      ),
+                      SizedBox(height: 10),
+                      ElevatedButton(
+                        onPressed: _isLoading ? null : _sendPasswordResetLink,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color.fromARGB(255, 13, 64, 218),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: Center(
+                            child: _isLoading
+                                ? CircularProgressIndicator(color: Colors.white)
+                                : Text('Send Reset Link'),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: Text('Back to Login'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // Import shared_preferences
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   static Route route() => MaterialPageRoute(
@@ -24,7 +24,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-    _loadCredentials(); // Load saved credentials when the page initializes
+    _loadCredentials();
   }
 
   @override
@@ -57,13 +57,24 @@ class _LoginPageState extends State<LoginPage> {
       User? user = userCredential.user;
 
       if (user != null) {
-        DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection("users").doc(user.uid).get();
+        DocumentSnapshot userDoc = await FirebaseFirestore.instance
+            .collection("users")
+            .doc(user.uid)
+            .get();
 
         if (userDoc.exists) {
+          // Save credentials
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('email', emailController.text.trim());
+          await prefs.setString('password', passwordController.text.trim());
+
           Navigator.pushReplacementNamed(context, '/home');
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("User data not found. Please sign up first."), backgroundColor: Colors.red),
+            const SnackBar(
+              content: Text("User data not found. Please sign up first."),
+              backgroundColor: Colors.red,
+            ),
           );
           await FirebaseAuth.instance.signOut();
         }
@@ -92,82 +103,102 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blueGrey[50],
-      body: Center(
-        child: Card(
-          elevation: 8,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Form(
-              key: formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text('LOGIN', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 20),
-                  TextFormField(
-                    controller: emailController,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                      border: OutlineInputBorder(),
-                    ),
-                    textInputAction: TextInputAction.next,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) return 'Please enter your email';
-                      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) return 'Invalid email';
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 10),
-                  TextFormField(
-                    controller: passwordController,
-                    obscureText: !isPasswordVisible,
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      border: OutlineInputBorder(),
-                      suffixIcon: IconButton(
-                        icon: Icon(isPasswordVisible ? Icons.visibility : Icons.visibility_off),
-                        onPressed: () {
-                          setState(() => isPasswordVisible = !isPasswordVisible);
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Background Image
+          Image.asset(
+            'assets/images/login.webp',
+            fit: BoxFit.cover,
+          ),
+
+          // Optional: dark overlay for readability
+          Container(color: Colors.black.withOpacity(0.3)),
+
+          // Login Form
+          Center(
+            child: Card(
+              elevation: 8,
+              color: Colors.white.withOpacity(0.9),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        'LOGIN',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: emailController,
+                        decoration: const InputDecoration(
+                          labelText: 'Email',
+                          border: OutlineInputBorder(),
+                        ),
+                        textInputAction: TextInputAction.next,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) return 'Please enter your email';
+                          if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) return 'Invalid email';
+                          return null;
                         },
                       ),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) return 'Please enter your password';
-                      if (value.length < 6) return 'Password must be at least 6 characters';
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 10),
-                  ElevatedButton(
-                    onPressed: isLoading ? null : loginUserWithEmailAndPassword,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.pink,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    ),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: Center(
-                        child: isLoading ? const CircularProgressIndicator(color: Colors.white) : const Text('LOGIN'),
+                      const SizedBox(height: 10),
+                      TextFormField(
+                        controller: passwordController,
+                        obscureText: !isPasswordVisible,
+                        decoration: InputDecoration(
+                          labelText: 'Password',
+                          border: const OutlineInputBorder(),
+                          suffixIcon: IconButton(
+                            icon: Icon(isPasswordVisible ? Icons.visibility : Icons.visibility_off),
+                            onPressed: () {
+                              setState(() => isPasswordVisible = !isPasswordVisible);
+                            },
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) return 'Please enter your password';
+                          if (value.length < 6) return 'Password must be at least 6 characters';
+                          return null;
+                        },
                       ),
-                    ),
+                      const SizedBox(height: 10),
+                      ElevatedButton(
+                        onPressed: isLoading ? null : loginUserWithEmailAndPassword,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color.fromARGB(255, 13, 64, 218),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: Center(
+                            child: isLoading
+                                ? const CircularProgressIndicator(color: Colors.white)
+                                : const Text('LOGIN'),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      TextButton(
+                        onPressed: () => Navigator.pushNamed(context, '/forget'),
+                        child: const Text('Forgot Password?'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pushNamed(context, '/signup'),
+                        child: const Text("Need an account? SIGN UP"),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 10),
-                  TextButton(
-                    onPressed: () => Navigator.pushNamed(context, '/forget'),
-                    child: const Text('Forgot Password?'),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.pushNamed(context, '/signup'),
-                    child: const Text("Need an account? SIGN UP"),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

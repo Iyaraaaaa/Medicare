@@ -114,121 +114,100 @@ class _MobileSignupPageState extends State<MobileSignupPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Mobile Sign Up'),
-        backgroundColor: _primaryColor,
-        elevation: 0,
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 40),
-                Text(
-                  "Enter your mobile number",
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Background Image
+          Image.asset(
+            'assets/images/login.webp', // Replace with your background image path
+            fit: BoxFit.cover,
+          ),
+
+          // Dark overlay for readability
+          Container(color: Colors.black.withOpacity(0.4)),
+
+          // Signup Form
+          Center(
+            child: Card(
+              elevation: 8,
+              color: Colors.white.withOpacity(0.9),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        'SIGN UP',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  "We'll send you a verification code",
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.black54,
-                  ),
-                ),
-                const SizedBox(height: 32),
-                InternationalPhoneNumberInput(
-                  onInputChanged: (number) {
-                    setState(() {
-                      _phoneNumber = number.phoneNumber ?? "";
-                    });
-                  },
-                  selectorConfig: const SelectorConfig(
-                    selectorType: PhoneInputSelectorType.DIALOG,
-                    showFlags: true,
-                    useEmoji: true,
-                  ),
-                  initialValue: _initialPhoneNumber,
-                  textFieldController: _phoneController,
-                  formatInput: true,
-                  keyboardType: TextInputType.phone,
-                  inputDecoration: InputDecoration(
-                    labelText: "Phone Number",
-                    hintText: "712345678",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: _primaryColor),
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey[50],
-                    contentPadding: const EdgeInsets.all(16),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return "Please enter a phone number";
-                    }
-                    if (_phoneNumber.isEmpty) {
-                      return "Please select a valid country code";
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 40),
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _sendOTP,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _buttonColor,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: _isLoading
-                        ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 3,
-                            ),
-                          )
-                        : const Text(
-                            "Send Verification Code",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
+                      const SizedBox(height: 20),
+                      InternationalPhoneNumberInput(
+                        onInputChanged: (number) {
+                          setState(() {
+                            _phoneNumber = number.phoneNumber ?? "";
+                          });
+                        },
+                        selectorConfig: const SelectorConfig(
+                          selectorType: PhoneInputSelectorType.DIALOG,
+                          showFlags: true,
+                          useEmoji: true,
+                        ),
+                        initialValue: _initialPhoneNumber,
+                        textFieldController: _phoneController,
+                        formatInput: true,
+                        keyboardType: TextInputType.phone,
+                        inputDecoration: InputDecoration(
+                          labelText: "Phone Number",
+                          hintText: "712345678",
+                          border: OutlineInputBorder(),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: _primaryColor),
                           ),
+                          contentPadding: const EdgeInsets.all(16),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Please enter a phone number";
+                          }
+                          if (_phoneNumber.isEmpty) {
+                            return "Please select a valid country code";
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: _isLoading ? null : _sendOTP,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _buttonColor,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: Center(
+                            child: _isLoading
+                                ? const CircularProgressIndicator(color: Colors.white)
+                                : const Text('SEND VERIFICATION CODE'),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      TextButton(
+                        onPressed: () => Navigator.pushNamed(context, '/login'),
+                        child: const Text("Already have an account? LOGIN"),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 24),
-                const Divider(),
-                const SizedBox(height: 16),
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text(
-                    "Already have an account? Sign In",
-                    style: TextStyle(color: _primaryColor),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

@@ -30,22 +30,38 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  intl_phone_number_input: ^0.7.4
+  
+  # Firebase dependencies
+  firebase_core: ^3.13.0
+  firebase_auth: ^5.5.2
   firebase_storage: ^12.4.5
   cloud_firestore: ^5.6.6
-  firebase_core: ^3.13.0  # Ensure this matches your firebase_auth version
-  firebase_auth: ^5.5.2
   firebase_app_check: ^0.3.2+5
+
+  # Image picker for selecting photos
+  image_picker: ^1.1.2
+
+  # Phone number input fields
+  intl_phone_field: ^3.0.0
+  intl_phone_number_input: ^0.7.0+2
+
+  # Icon libraries
   cupertino_icons: ^1.0.8
   font_awesome_flutter: ^10.8.0
-  image_picker: ^1.1.2
+
+  # SQLite Database
   sqflite: ^2.2.0+3
+
+  # Shared preferences for local storage
   shared_preferences: ^2.5.2
+
+  # State management
   provider: ^6.0.5
+
+  # Networking for images
   cached_network_image: ^3.2.0
   path_provider: ^2.0.14
   path: ^1.8.0
-  
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
 
@@ -92,6 +108,8 @@ flutter:
     - assets/images/on_board_2.png
     - assets/images/on_board_3.png
     - assets/images/empty.jpg
+    - assets/images/login.webp
+    
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
